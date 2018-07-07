@@ -8,12 +8,26 @@ wlen = 4096;
 % ch2R = delayseq(ref, 0.06928*2/340, fs);
 % ch0R = delayseq(ref, 0.06928/340, fs);
 
- [ch1L, fs] = audioread('./ch1L.wav');
- [ch1R, ~] = audioread('./ch1R.wav');
- [ch0L, ~] = audioread('./ch0L.wav');
- [ch0R, ~] = audioread('./ch0R.wav');
- [ch2L, ~] = audioread('./ch2L.wav');
- [ch2R, ~] = audioread('./ch2R.wav');
+ ch0L = fread(fopen('./ch0L.pcm', 'r'), inf, 'int32');
+ ch0R = fread(fopen('./ch0R.pcm', 'r'), inf, 'int32');
+ ch1L = fread(fopen('./ch1L.pcm', 'r'), inf, 'int32');
+ ch1R = fread(fopen('./ch1R.pcm', 'r'), inf, 'int32');
+ ch2L = fread(fopen('./ch2L.pcm', 'r'), inf, 'int32');
+ ch2R = fread(fopen('./ch2R.pcm', 'r'), inf, 'int32');
+ fs = 44100;
+ 
+
+ 
+ 
+%  [ch1L, fs] = audioread('./ch1L.wav');
+%  [ch1R, ~] = audioread('./ch1R.wav');
+%  [ch0L, ~] = audioread('./ch0L.wav');
+%  [ch0R, ~] = audioread('./ch0R.wav');
+%  [ch2L, ~] = audioread('./ch2L.wav');
+%  [ch2R, ~] = audioread('./ch2R.wav');
+ 
+ 
+ 
 %ch_all = [ch1L ch1R ch0L ch0R ch2L ch2R];
 %ch_all = ch_all(180000:360000,:);
 ch_2 = [ch1L ch1R ch0L ch0R ch2L ch2R];
@@ -69,7 +83,7 @@ title("direction expectation")
 axis([1 num_frame-1 1 num_doa]);
 subplot(413)
 
-imagesc(srp);
+imagesc(srp(:, 3:end));
 title("srp direction expectation")
 axis([1 num_frame-1 1 num_doa]);
 subplot(414)
