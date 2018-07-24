@@ -21,7 +21,7 @@ function [srp, max_id]=srp_phat(Sx, mic_loc, mic_a, num_doa, r, fs)
         for m2=m1+1:num_chs
             p= p+1;
             Z(:,p)= Sx(:, m1).*conj(Sx(:,m2));
-            Z(:,p) = Z(:,p)./(abs(Z(:,p).^0.5 +eps));           
+            Z(:,p) = Z(:,p)./(abs(Z(:,p) +eps));           
 %             Z(:,p,:)= Sx(:, :, m1).*conj(Sx(:, :, m2));
 %             Z(:,p,:) = Z(:,p,:)./(abs(Z(:,p,:) +eps));
         end

@@ -1,5 +1,5 @@
 clear;
-wlen = 4096;
+wlen = 512;
 % [ref, fs] = audioread('./ch1L.wav');
 % ch1L = delayseq(ref,0.06928/340,fs);
 % ch0L = delayseq(ref,0/340,fs);
@@ -8,7 +8,7 @@ wlen = 4096;
 % ch2R = delayseq(ref, 0.06928*2/340, fs);
 % ch0R = delayseq(ref, 0.06928/340, fs);
 
-addpath('./direc_4/')
+addpath('./direc_7/')
 
  ch0L = fread(fopen('ch0L.pcm', 'r'), inf, 'int32');
  ch0R = fread(fopen('ch0R.pcm', 'r'), inf, 'int32');
@@ -44,6 +44,7 @@ addpath('./direc_4/')
 %ch_all = [ch1L ch1R ch0L ch0R ch2L ch2R];
 %ch_all = ch_all(180000:360000,:);
 ch_2 = [ch1L ch1R ch0L ch0R ch2L ch2R];
+ch_2=filter([1,-0.98],1,ch_2);
 %ch_2 = ch_2(40000:120000,:);
 mic_loc_2 = 0.8*[0.1000    0.0000         0
     0.0500    0.0866         0
@@ -91,17 +92,17 @@ axis([1 length(ch_2)-1 -0.02 0.02] );
 
 subplot(412)
 
-plot([max_id' 20*max(srp)'])
+plot(max_id')
 title("direction expectation")
 axis([1 num_frame-1 1 num_doa]);
 subplot(413)
 
-imagesc(srp(:, 3:end));
+imagesc(srp(:, :));
 title("srp direction expectation")
 axis([1 num_frame-1 1 num_doa]);
 subplot(414)
 
-plot([tau' tau3']);
+plot([tau' tau2']);
 title("delay expectation")
 % hold on;
 % 
