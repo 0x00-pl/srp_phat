@@ -1,4 +1,4 @@
-function [srp, max_id, max_m]=srp_phat_d(Sx, mic_loc,mic_a, num_doa,num_doa_high, r, fs)
+function [srp, max_id, max_m, srp_ch]=srp_phat_d(Sx, mic_loc, num_doa,num_doa_high, fs)
     %[nbin, num_frames, num_chs] = size(Sx); 
     [nbin, num_chs] = size(Sx); 
 %     delay_mic = [0.04 0.0283 0 -0.0283 -0.04 -0.0283 0 0.0283;
@@ -8,8 +8,8 @@ function [srp, max_id, max_m]=srp_phat_d(Sx, mic_loc,mic_a, num_doa,num_doa_high
 %                  -0.04 0 0.04 0.0566 0.04 0 -0.04 -0.0566;
 %                  -0.04 -0.0283 0 0.0283 0.04 0.0283 0 -0.0283];
 
-    delay_mic = compute_delay_mic_loc(mic_loc,mic_a, num_doa,num_doa_high, r);
-    shiftTau = delay_mic/340;
+    delay_mic = compute_delay_mic_loc(mic_loc, num_doa,num_doa_high);
+    shiftTau = delay_mic/343;
     maxshift = floor(nbin/2);
     shiftdelay = round(-fs * shiftTau+ maxshift + 1);
     % GCC-PHAT
@@ -21,7 +21,8 @@ function [srp, max_id, max_m]=srp_phat_d(Sx, mic_loc,mic_a, num_doa,num_doa_high
         for m2=m1+1:num_chs
             p= p+1;
             Z(:,p)= Sx(:, m1).*conj(Sx(:,m2));
-            Z(:,p) = Z(:,p)./(abs(Z(:,p)) +eps);           
+%             Z(:,p) = Z(:,p)./(abs(Z(:,p)) + eps);    
+            Z(:,p) = Z(:,p);%./(abs(Z(:,p)).^0.5 + eps);           
         end
     end
     %R= zeros(nbin ,N,num_frames);
@@ -35,15 +36,16 @@ function [srp, max_id, max_m]=srp_phat_d(Sx, mic_loc,mic_a, num_doa,num_doa_high
     % SRP search
     srp = zeros(num_doa,1);
     srp_m = zeros(num_doa,num_doa_high);
+    srp_ch = zeros(num_doa,num_doa_high,N);
     for q=1:num_doa
         %for m = 1:num_doa_high
         temp = 0;
         temp_m = zeros(num_doa_high,1);
-            for p = 1: N
-                temp = temp + max(R(shiftdelay(p,q,:),p));
-%                 temp = temp + sum(R(shiftdelay(p,q,:),p))/num_doa_high;
-                temp_m = temp_m + R(shiftdelay(p,q,:),p);
-            end
+        for p = 1: N
+            temp = temp + sum(R(shiftdelay(p,q,:),p))/num_doa_high;
+            temp_m = temp_m + R(shiftdelay(p,q,:),p);
+            srp_ch(q,:,p) = R(shiftdelay(p,q,:),p);
+        end
         %end
         srp(q) = temp;
         srp_m(q,:) = temp_m;
@@ -66,11 +68,11 @@ function [srp, max_id, max_m]=srp_phat_d(Sx, mic_loc,mic_a, num_doa,num_doa_high
 %     imagesc(srp);
     return 
 end
-function [delay_mic] = compute_delay_mic_loc(mic_loc,mic_a, num_doa,num_doa_high, r)
+function [delay_mic] = compute_delay_mic_loc(mic_loc, num_doa,num_doa_high)
     fbin = linspace(0,360,num_doa+1);
     f = fbin(1:end-1);
     f_h = linspace(0,60,num_doa_high);
-    
+    %f_h = f_h(1:end-1);
     [num_ch, ~] = size(mic_loc);
     N = num_ch*(num_ch-1)/2;
     delay_mic = zeros(N, num_doa, num_doa_high);
@@ -80,7 +82,9 @@ function [delay_mic] = compute_delay_mic_loc(mic_loc,mic_a, num_doa,num_doa_high
             n = n+1;
             for k = 1:num_doa
                 for m = 1:num_doa_high
-                    delay_mic(n,k,m) = r * (cosd(f(k)-mic_a(i)) - cosd(mic_a(j)-f(k))) * cosd(f_h(m));
+                    %delay_mic(n,k,m) = r * (cosd(f(k)-mic_a(i)) - cosd(mic_a(j)-f(k))) * cosd(f_h(m));
+                    dire_v = [cosd(f(k))*cosd(f_h(m)),sind(f(k))*cosd(f_h(m)),1*sind(f_h(m))];
+                    delay_mic(n,k,m) = dot((mic_loc(i,:)-mic_loc(j,:)),dire_v);
                 end
             end
         end
