@@ -1,4 +1,4 @@
-function [srp, max_id, max_m, srp_ch]=srp_phat_d(Sx, mic_loc, num_doa,num_doa_high, fs)
+function [srp, max_id, max_m, srp_ch, R]=srp_phat_d(Sx, mic_loc, num_doa,num_doa_high, fs)
     %[nbin, num_frames, num_chs] = size(Sx); 
     [nbin, num_chs] = size(Sx); 
 %     delay_mic = [0.04 0.0283 0 -0.0283 -0.04 -0.0283 0 0.0283;
@@ -21,8 +21,8 @@ function [srp, max_id, max_m, srp_ch]=srp_phat_d(Sx, mic_loc, num_doa,num_doa_hi
         for m2=m1+1:num_chs
             p= p+1;
             Z(:,p)= Sx(:, m1).*conj(Sx(:,m2));
-%             Z(:,p) = Z(:,p)./(abs(Z(:,p)) + eps);    
-            Z(:,p) = Z(:,p);%./(abs(Z(:,p)).^0.5 + eps);           
+            Z(:,p) = Z(:,p)./(abs(Z(:,p)) + eps);    
+%             Z(:,p) = Z(:,p);%./(abs(Z(:,p)).^0.5 + eps);           
         end
     end
     %R= zeros(nbin ,N,num_frames);
@@ -31,12 +31,14 @@ function [srp, max_id, max_m, srp_ch]=srp_phat_d(Sx, mic_loc, num_doa,num_doa_hi
         %for q = 1:num_frames
            % R(:,p,q)= fftshift(real(ifft(Z(:,p,q))));
         R(:,p)= fftshift(real(ifft(Z(:,p))));
+        R(257,p)= 0;
         %end
     end
     % SRP search
     srp = zeros(num_doa,1);
     srp_m = zeros(num_doa,num_doa_high);
     srp_ch = zeros(num_doa,num_doa_high,N);
+
     for q=1:num_doa
         %for m = 1:num_doa_high
         temp = 0;
