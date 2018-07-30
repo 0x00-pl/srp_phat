@@ -1,7 +1,7 @@
 clear;
 figure(3)
 wlen = 512;
-fluence = 1;
+fluence = 8;
 % [ref, fs] = audioread('./ch1L.wav');
 % 
 % ch1L = delayseq(ref,cosd(45)*0.06928/340,fs);
@@ -10,7 +10,7 @@ fluence = 1;
 % ch1R = delayseq(ref, 0/340, fs);
 % ch2R = delayseq(ref, cosd(45)*0.06928*2/340, fs);
 % ch0R = delayseq(ref, cosd(45)*0.06928/340, fs);
-addpath('./direc_4/')
+addpath('./direc_7/')
 
 ch0L = fread(fopen('ch0L.pcm', 'r'), inf, 'int32');
 ch0R = fread(fopen('ch0R.pcm', 'r'), inf, 'int32');
@@ -43,6 +43,22 @@ ch3R = ch3R(1:size_min);
 %ch_all = [ch1L ch1R ch0L ch0R ch2L ch2R];
 %ch_all = ch_all(180000:360000,:);
 ch_2 = [ch1L ch1R ch0L ch0R ch2L ch2R ch3R];
+
+
+% % % % % s_rg = 2:0.2:5;
+% % % % % ch_2 = [ ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+0)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+5)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+15)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+20)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+15)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+5)/16))' ...
+% % % % %     sum(sin(s_rg'*pi*((1:size(ch0L))+10)/16))' ...
+% % % % %     ];
+% % % % % %ch_2 = ch_2 + [0 5 15 20 15 5 10];
+% % % % % ch_2 = ch_2 + 0.1*randn(size(ch_2));
+
+
 ch_2=filter([1,-0.97],1,ch_2);
 %ch_2 = ch_2(40000:120000,:);
 mic_loc_2 = 0.8*[0.1000    0.0000         0
@@ -76,9 +92,10 @@ tau3 = zeros(1,num_frame-1);
 srp = zeros(num_doa,num_frame-1);
 srp_m = zeros(num_doa,num_doa_high, num_frame-1);
 srp_ch = zeros(num_frame-1, num_doa, num_doa_high, 21);
+R_list = zeros(num_frame-1, wlen, 21);
 tic
 for i=1:num_frame-1
-   ch_slice = ch_2(i*wlen+1:(i+1)*wlen,:); 
+   ch_slice = ch_2(i*wlen+1:(i+1)*wlen,:);
    tau(i) = gccphat(ch_slice(:,1),ch_slice(:,2));
 %   tau2(i) = gccphat(ch_slice(:,2),ch_slice(:,3));
 %    tau3(i) = gccphat(ch_slice(:,1),ch_slice(:,3));
@@ -88,12 +105,12 @@ for i=1:num_frame-1
    %Sx = stft_multi(ch_slice',wlen);
    Sx = fft(ch_slice, wlen);
    %Sx(1:25,:) = Sx(1:25,:).*0.5;
-   [srp(:,i), max_id(i), max_m(i), srp_ch(i,:,:,:)] = srp_phat_d(Sx,mic_loc_2, num_doa,num_doa_high,fs);
+   [srp(:,i), max_id(i), max_m(i), srp_ch(i,:,:,:), R_list(i,:,:)] = srp_phat_d(Sx,mic_loc_2, num_doa,num_doa_high,fs);
 end
 toc
 subplot(511)
-plot(ch_2(:,2))
-axis([1 length(ch_2)-1 -0.02 0.02] );
+plot(ch_2(:,6))
+%axis([1 length(ch_2)-1] );
 
 subplot(512)
 
